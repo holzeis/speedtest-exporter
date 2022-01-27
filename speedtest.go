@@ -1,14 +1,15 @@
 package main
 
 import (
-	"net/http"
-	"flag"
-	"log"
 	"bytes"
-	"os/exec"
-	"fmt"
-	"strings"
 	"encoding/json"
+	"flag"
+	"fmt"
+	"log"
+	"math"
+	"net/http"
+	"os/exec"
+	"strings"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -38,8 +39,8 @@ var (
 
 type Metrics struct {
 	Download json.Number `json:"download"`
-	Upload json.Number `json:"upload"`
-	Ping json.Number `json:"ping"`
+	Upload   json.Number `json:"upload"`
+	Ping     json.Number `json:"ping"`
 }
 
 // Exporter collects Speedtest stats from the given server and exports them using
@@ -62,17 +63,18 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 
 	metrics, err := e.NetworkMetrics()
 	if err != nil {
-		log.Printf(fmt.Sprintf("Error: %v", err.Error()))
+		log.Printf("Error: %v", err.Error())
 		return
 	}
-	
-	m_download, _ := metrics.Download.Float64()
-	m_ping, _ := metrics.Ping.Float64()
-	m_upload, _ := metrics.Upload.Float64()
 
-	ch <- prometheus.MustNewConstMetric(ping, prometheus.GaugeValue, m_ping)
-	ch <- prometheus.MustNewConstMetric(download, prometheus.GaugeValue, m_download)
-	ch <- prometheus.MustNewConstMetric(upload, prometheus.GaugeValue, m_upload)
+	m_download, _ := metrics.Download.Float64()
+	m_upload, _ := metrics.Upload.Float64()
+	m_ping, _ := metrics.Ping.Float64()
+
+	ch <- prometheus.MustNewConstMetric(ping, prometheus.GaugeValue, math.Round(m_ping))
+	ch <- prometheus.MustNewConstMetric(download, prometheus.GaugeValue, math.Round(m_download/1024/1024))
+	ch <- prometheus.MustNewConstMetric(upload, prometheus.GaugeValue, math.Round(m_upload/1024/1024))
+
 	log.Printf("Speedtest exporter finished")
 }
 
@@ -84,10 +86,8 @@ func (e *Exporter) NetworkMetrics() (metrics Metrics, err error) {
 	}
 
 	err = json.Unmarshal(response.Output.Bytes(), &metrics)
-	log.Printf("%v", metrics.Download)
 	return metrics, err
 }
-
 
 // Response represents the command exec response.
 type Response struct {
@@ -96,19 +96,17 @@ type Response struct {
 }
 
 func (e *Exporter) execute(command string) (Response, error) {
-	log.Printf(fmt.Sprintf(command))
-	cmd := exec.Command("bash", "-c", fmt.Sprintf(command))
+	cmd := exec.Command("bash", "-c", fmt.Sprintf("%v", command))
 	var outb, errb bytes.Buffer
 	cmd.Stdout = &outb
 	cmd.Stderr = &errb
 	err := cmd.Run()
 	if errb.Len() > 0 {
 		// All logs are currently directed to stderr
-		log.Printf(errb.String())
+		log.Printf("%v", errb.String())
 	}
 	return Response{Output: outb, Logs: errb}, err
 }
-
 
 func main() {
 	var (
