@@ -30,13 +30,12 @@ RUN apt-get update && \
     apt-get install python -y && \
     apt-get install wget -y && \
     wget -O speedtest-cli https://raw.githubusercontent.com/sivel/speedtest-cli/master/speedtest.py &&  \
-    chmod 775 speedtest-cli
+    chmod +x speedtest-cli
 
 LABEL org.opencontainers.image.authors="richard@holzeis.me"
 LABEL org.opencontainers.image.source="https://github.com/holzeis/speedtest-exporter"
 
 COPY --from=build /go/src/github.com/holzeis/speedtest/speedtest /app/speedtest
-COPY --from=build /go/src/github.com/holzeis/speedtest/speedtest.sh /app/speedtest.sh
 
 ENV PORT 9112
 CMD ["./speedtest"]

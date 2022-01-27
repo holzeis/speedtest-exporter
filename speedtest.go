@@ -4,10 +4,12 @@ import (
 	"bytes"
 	"encoding/json"
 	"flag"
+	"fmt"
 	"log"
 	"math"
 	"net/http"
 	"os/exec"
+	"strings"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -77,21 +79,11 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 }
 
 func (e *Exporter) NetworkMetrics() (metrics Metrics, err error) {
-	cmd := exec.Command("./speedtest.sh")
-	var outb, errb bytes.Buffer
-	cmd.Stdout = &outb
-	cmd.Stderr = &errb
-	err = cmd.Run()
-	if errb.Len() > 0 {
-		// All logs are currently directed to stderr
-		log.Printf("%v", errb.String())
-	}
-
+	command := []string{"./speedtest-cli", "--json"}
+	response, err := e.execute(strings.Join(command, " "))
 	if err != nil {
 		return metrics, err
 	}
-
-	response := Response{Output: outb, Logs: errb}
 
 	err = json.Unmarshal(response.Output.Bytes(), &metrics)
 	return metrics, err
@@ -101,6 +93,19 @@ func (e *Exporter) NetworkMetrics() (metrics Metrics, err error) {
 type Response struct {
 	Output bytes.Buffer
 	Logs   bytes.Buffer
+}
+
+func (e *Exporter) execute(command string) (Response, error) {
+	cmd := exec.Command("sh", "-c", fmt.Sprintf("%v", command))
+	var outb, errb bytes.Buffer
+	cmd.Stdout = &outb
+	cmd.Stderr = &errb
+	err := cmd.Run()
+	if errb.Len() > 0 {
+		// All logs are currently directed to stderr
+		log.Printf("%v", errb.String())
+	}
+	return Response{Output: outb, Logs: errb}, err
 }
 
 func main() {
