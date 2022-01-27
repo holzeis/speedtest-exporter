@@ -120,6 +120,8 @@ func main() {
 
 	log.Printf("Starting speedtest exporter")
 
+	http.HandleFunc(("/"), func(w http.ResponseWriter, r *http.Request) { w.WriteHeader(http.StatusOK) })
+
 	// Expose the registered metrics via HTTP.
 	http.Handle("/metrics", promhttp.HandlerFor(
 		prometheus.DefaultGatherer,
