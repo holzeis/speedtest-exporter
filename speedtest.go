@@ -96,7 +96,7 @@ type Response struct {
 }
 
 func (e *Exporter) execute(command string) (Response, error) {
-	cmd := exec.Command("bash", "-c", fmt.Sprintf("%v", command))
+	cmd := exec.Command("sh", "-c", fmt.Sprintf("%v", command))
 	var outb, errb bytes.Buffer
 	cmd.Stdout = &outb
 	cmd.Stderr = &errb
