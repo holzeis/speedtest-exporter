@@ -27,7 +27,7 @@ jobs:
           echo ::set-output name=arch::${ARCH}
       - name: Docker Build (build)
         run: |
-          docker build -t ghcr.io/holzeis/speedtest:${{ steps.prepare.outputs.version }} --build-arg ARCH=${{ steps.prepare.outputs.arch }} .
+          docker build -t ghcr.io/holzeis/speedtest-exporter:${{ steps.prepare.outputs.version }} --build-arg ARCH=${{ steps.prepare.outputs.arch }} .
       - name: Docker Login
         uses: docker/login-action@v1
         with:
@@ -36,7 +36,7 @@ jobs:
           password: ${{ secrets.GHCR_PASSWORD }}
       - name: Docker Build (push)
         run: |
-          docker push ghcr.io/holzeis/speedtest:${{ steps.prepare.outputs.version }}
+          docker push ghcr.io/holzeis/speedtest-exporter:${{ steps.prepare.outputs.version }}
       - name: Clear
         if: always()
         run: |
