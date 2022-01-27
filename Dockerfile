@@ -33,7 +33,7 @@ RUN apt-get update && \
     chmod 775 speedtest-cli
 
 LABEL org.opencontainers.image.authors="richard@holzeis.me"
-LABEL org.opencontainers.image.source="https://github.com/holzeis/speedtest"
+LABEL org.opencontainers.image.source="https://github.com/holzeis/speedtest-exporter"
 
 COPY --from=build /go/src/github.com/holzeis/speedtest/speedtest /app/speedtest
 
