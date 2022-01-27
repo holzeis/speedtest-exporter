@@ -71,6 +71,10 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 	m_upload, _ := metrics.Upload.Float64()
 	m_ping, _ := metrics.Ping.Float64()
 
+	log.Printf("Download: %v Mbit/s", math.Round(m_download/1024/1024))
+	log.Printf("Upload: %v Mbit/s", math.Round(m_upload/1024/1024))
+	log.Printf("Ping: %v ms", math.Round(m_ping))
+
 	ch <- prometheus.MustNewConstMetric(ping, prometheus.GaugeValue, math.Round(m_ping))
 	ch <- prometheus.MustNewConstMetric(download, prometheus.GaugeValue, math.Round(m_download/1024/1024))
 	ch <- prometheus.MustNewConstMetric(upload, prometheus.GaugeValue, math.Round(m_upload/1024/1024))
