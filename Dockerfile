@@ -36,6 +36,7 @@ LABEL org.opencontainers.image.authors="richard@holzeis.me"
 LABEL org.opencontainers.image.source="https://github.com/holzeis/speedtest-exporter"
 
 COPY --from=build /go/src/github.com/holzeis/speedtest/speedtest /app/speedtest
+COPY --from=build /go/src/github.com/holzeis/speedtest/speedtest.sh /app/speedtest.sh
 
 ENV PORT 9112
 CMD ["./speedtest"]
